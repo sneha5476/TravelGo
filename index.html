@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TravelGo</title>
+
+<style>
+body { margin:0; font-family:Arial; background:#f4f4f4; }
+
+/* Navbar */
+header {
+  background:#0d6efd;
+  color:white;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+}
+nav a {
+  color:white;
+  margin:10px;
+  cursor:pointer;
+  text-decoration:none;
+}
+
+/* Sections */
+.section { display:none; padding:20px; }
+.active { display:block; }
+
+/* Hero */
+.hero {
+  background:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e');
+  background-size:cover;
+  color:white;
+  padding:100px;
+  text-align:center;
+}
+
+/* Grid */
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:20px;
+}
+
+/* Card */
+.card {
+  background:white;
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+  transition:0.3s;
+}
+.card:hover {
+  transform:scale(1.05);
+}
+.card img {
+  width:100%;
+  height:150px;
+  object-fit:cover;
+}
+.card-content { padding:10px; }
+
+/* Button */
+button {
+  background:#0d6efd;
+  color:white;
+  border:none;
+  padding:8px;
+  cursor:pointer;
+  border-radius:5px;
+}
+
+/* Form */
+.form {
+  max-width:400px;
+  margin:auto;
+  background:white;
+  padding:20px;
+  border-radius:10px;
+}
+input, textarea {
+  width:100%;
+  padding:8px;
+  margin-top:10px;
+}
+
+/* Footer */
+footer {
+  background:#111;
+  color:white;
+  padding:10px;
+  text-align:center;
+  margin-top:20px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>TravelGo</h2>
+  <nav>
+    <a onclick="show('home')">Home</a>
+    <a onclick="show('packages')">Packages</a>
+    <a onclick="show('booking')">Booking</a>
+    <a onclick="show('about')">About</a>
+    <a onclick="show('contact')">Contact</a>
+  </nav>
+</header>
+
+<!-- HOME -->
+<div id="home" class="section active">
+  <div class="hero">
+    <h1>Explore the World 🌍</h1>
+    <p>Book your dream destinations easily</p>
+  </div>
+</div>
+
+<!-- PACKAGES -->
+<div id="packages" class="section">
+  <h2>Travel Packages</h2>
+  <div id="list" class="grid"></div>
+</div>
+
+<!-- BOOKING -->
+<div id="booking" class="section">
+  <h2>Book Your Trip</h2>
+  <div class="form">
+    <input id="name" placeholder="Your Name">
+    <input id="destination" placeholder="Destination">
+    <input id="date" placeholder="Travel Date">
+    <button onclick="bookTrip()">Book Now</button>
+  </div>
+
+  <div id="myBookings"></div>
+</div>
+
+<!-- ABOUT -->
+<div id="about" class="section">
+  <h2>About TravelGo</h2>
+  <p>TravelGo helps users discover and book amazing destinations easily.</p>
+</div>
+
+<!-- CONTACT -->
+<div id="contact" class="section">
+  <h2>Contact Us</h2>
+  <p><strong>Email:</strong> support@travelgo.com</p>
+  <p><strong>Phone:</strong> +91 91234 56789</p>
+
+  <div class="form">
+    <input id="cname" placeholder="Your Name">
+    <input id="cemail" placeholder="Email">
+    <textarea id="cmsg" placeholder="Message"></textarea>
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<footer>
+  © 2026 TravelGo | All Rights Reserved
+</footer>
+
+<script>
+const packages = [
+  {name:"Goa Beach", price:"₹10,000", img:"https://images.unsplash.com/photo-1507525428034-b723cf961d3e"},
+  {name:"Manali Hills", price:"₹15,000", img:"https://images.unsplash.com/photo-1501785888041-af3ef285b470"},
+  {name:"Kerala", price:"₹12,000", img:"https://images.unsplash.com/photo-1493558103817-58b2924bce98"}
+];
+
+function show(id){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+
+  if(id==="packages"){
+    const container=document.getElementById("list");
+    container.innerHTML="Loading...";
+    setTimeout(()=>loadPackages(packages),500);
+  }
+
+  if(id==="booking") loadBookings();
+}
+
+function loadPackages(data){
+  const container=document.getElementById("list");
+  container.innerHTML="";
+  data.forEach(p=>{
+    container.innerHTML+=`
+      <div class="card">
+        <img src="${p.img}">
+        <div class="card-content">
+          <h3>${p.name}</h3>
+          <p>${p.price}</p>
+          <button onclick="selectPackage('${p.name}')">Book</button>
+        </div>
+      </div>`;
+  });
+}
+
+function selectPackage(dest){
+  show("booking");
+  document.getElementById("destination").value=dest;
+}
+
+function bookTrip(){
+  const name=document.getElementById("name").value;
+  const dest=document.getElementById("destination").value;
+  const date=document.getElementById("date").value;
+
+  if(!name || !dest || !date){
+    alert("Fill all fields");
+    return;
+  }
+
+  let bookings=JSON.parse(localStorage.getItem("bookings"))||[];
+  bookings.push({name,dest,date});
+  localStorage.setItem("bookings",JSON.stringify(bookings));
+
+  alert("Booking Confirmed 🎉");
+
+  document.getElementById("name").value="";
+  document.getElementById("destination").value="";
+  document.getElementById("date").value="";
+
+  loadBookings();
+}
+
+function loadBookings(){
+  const container=document.getElementById("myBookings");
+  const bookings=JSON.parse(localStorage.getItem("bookings"))||[];
+
+  container.innerHTML="<h3>Your Bookings</h3>";
+
+  bookings.forEach((b,i)=>{
+    container.innerHTML+=`
+      <div>
+        ${b.name} booked ${b.dest} on ${b.date}
+        <button onclick="deleteBooking(${i})">Delete</button>
+      </div>`;
+  });
+}
+
+function deleteBooking(i){
+  let bookings=JSON.parse(localStorage.getItem("bookings"));
+  bookings.splice(i,1);
+  localStorage.setItem("bookings",JSON.stringify(bookings));
+  loadBookings();
+}
+
+function sendMessage(){
+  const email=document.getElementById("cemail").value;
+
+  if(!email.includes("@")){
+    alert("Enter valid email");
+    return;
+  }
+
+  alert("Message Sent ✅");
+}
+</script>
+
+</body>
+</html>
